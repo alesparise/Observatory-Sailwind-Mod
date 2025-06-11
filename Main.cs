@@ -8,14 +8,18 @@ using Object = UnityEngine.Object;
 
 namespace Observatory
 {   /// <summary>
+    /// NOTE2:  Now that I've unlocked the powers of postfixes, a lot of things might be easier to do.
+    ///         Also, I don't remember if I was using dynamic indexes for this stuff, if I was,
+    ///         I should change that to static indexes. I surely was for items.
     /// NOTE: I do think Observatory breaks the water everywhere, making waves appear in protected waters...
+    ///       NOTE3: I could simply extend the wacky fix I used for Observatory, 
     /// TODO: 
     /// • System to manage scenes with IslandHorizon    //DONE
-    /// • Add Observatory as destinations for other island missions
-    /// • replace continental shelf of Observatory with a round-ish one!
-    /// • Lower poly count for terrain before import (all the flat area should not have that many triangles
-    /// • Make inner dock deeper, outer dock shallower (to have more wave attenuation there)
-    /// • Might have to update ProfitPercent to adapt to longerIndexes!?!?
+    /// • Add Observatory as destinations for other island missions         //DONE
+    /// • replace continental shelf of Observatory with a round-ish one!    //SKIP
+    /// • Lower poly count for terrain before import (all the flat area should not have that many triangles //not essential
+    /// • Make inner dock deeper, outer dock shallower (to have more wave attenuation there)    //TODO
+    /// • Might have to update ProfitPercent to adapt to longerIndexes!?!?                      //I think I did this actually!
     /// 
     /// CODE REORGANIZATION:
     /// IndexManager should be renamed to SaveManager and act as a centralized manager for all things affecting saves:
@@ -23,9 +27,10 @@ namespace Observatory
     ///     • ItemIndexManager      //DONE
     ///     • PortIndexManager      //DONE
     ///     • SaveCleaner           //DONE
-    ///     
+    ///     ↑This should be scrapped, the saveCleaner is also incomplete, I think I was missing some cleanup in the trade boats
     /// KNOWN ISSUES:
     /// • When opening the trade book in Observatory, the Lagoon Bookmark will be selected. Manually switch to Aestrin. No straightforward fix.
+    /// ↑ This might be fixed with a postfix, I think I tried but I had not yet figured postfixes out...
     /// </summary>
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
     public class ObservatoryMain : BaseUnityPlugin
@@ -89,10 +94,10 @@ namespace Observatory
                 harmony.Patch(original9, new HarmonyMethod(patch9));
             }
             
-            //debug
-            MethodInfo debugOg = AccessTools.Method(typeof(GPButtonRopeWinch), "Update");
-            MethodInfo debugPt = AccessTools.Method(typeof(ObservatoryPatches), "SaveablePrefabIndex");
-            harmony.Patch(debugOg, new HarmonyMethod(debugPt));
+            //debug 
+            //MethodInfo debugOg = AccessTools.Method(typeof(GPButtonRopeWinch), "Update");
+            //MethodInfo debugPt = AccessTools.Method(typeof(ObservatoryPatches), "SaveablePrefabIndex");
+            //harmony.Patch(debugOg, new HarmonyMethod(debugPt));
 
             //Create config file in BepInEx\config\
         }
@@ -103,7 +108,7 @@ namespace Observatory
         public static AssetBundle assetsBundle;     //for prefabs
         public static AssetBundle sceneBundle;      //for scenes
         public static string bundlePath;
-        public static GameObject sextant;
+        //public static GameObject sextant;
         public static GameObject observatory;
         
         //debug var remove this
@@ -118,9 +123,9 @@ namespace Observatory
             MatLib.RegisterMaterials(shiftingWorld);
 
             //Add setxant
-            AddSextantComponents();
-            sextant = Object.Instantiate(sextant, shiftingWorld);
-            sextant.transform.position = new Vector3(-48896.88f, 2.795f, -45943.67f);   //DEBUG: this is just temporary to have it appear in Neverdin
+            //AddSextantComponents();
+            //sextant = Object.Instantiate(sextant, shiftingWorld);
+            //sextant.transform.position = new Vector3(-48896.88f, 2.795f, -45943.67f);   //DEBUG: this is just temporary to have it appear in Neverdin
 
             //Add island
             AddIslandComponents(shiftingWorld);
@@ -150,20 +155,20 @@ namespace Observatory
                 }
             }
             //LOAD ASSETS
-            string sextantPath = "Assets/Sextant/sextant.prefab";
-            sextant = assetsBundle.LoadAsset<GameObject>(sextantPath);
+            //string sextantPath = "Assets/Sextant/sextant.prefab";
+            //sextant = assetsBundle.LoadAsset<GameObject>(sextantPath);
 
             string observatoryPath = "Assets/Observatory/Observatory MED.prefab";
             observatory = assetsBundle.LoadAsset<GameObject>(observatoryPath);
         }
-        private static void AddSextantComponents()
-        {   //add all necessary components to an item. It requires calling IndexManager.AssignAvailableIndex last
+        //private static void AddSextantComponents()
+        //{   //add all necessary components to an item. It requires calling IndexManager.AssignAvailableIndex last
 
-            sextant.AddComponent<ModItemSextant>();
-            sextant.AddComponent<SaveablePrefab>();
+        //    sextant.AddComponent<ModItemSextant>();
+        //    sextant.AddComponent<SaveablePrefab>();
 
-            ItemIndexer.AssignAvailableIndex(sextant);
-        }
+        //    ItemIndexer.AssignAvailableIndex(sextant);
+        //}
         public static void AddIslandComponents(Transform sw)
         {   //adds any necessary component to Observatory Island. Also adds the island's destinations and the island as a destination
             observatory.AddComponent<ModHorizon>();
